@@ -1,5 +1,4 @@
 import express from 'express'
-import { ObjectId } from 'mongodb'
 import { dbService } from '../services/db.service.js'
 
 const router = express.Router()
@@ -14,10 +13,23 @@ router.get('/', async (req, res) => {
     }
 })
 
+// router.get('/:id', async (req, res) => {
+//     try {
+//         const collection = await dbService.getCollection('stays')
+//         const stay = await collection.findOne({ _id: req.params.id })
+//         res.json(stay)
+//     } catch (err) {
+//         res.status(500).json({ error: 'Failed to get stay' })
+//     }
+// })
 router.get('/:id', async (req, res) => {
     try {
         const collection = await dbService.getCollection('stays')
-        const stay = await collection.findOne({ _id: req.params.id })
+        let stay = await collection.findOne({ _id: req.params.id })
+        if (!stay) {
+            const { ObjectId } = await import('mongodb')
+            stay = await collection.findOne({ _id: new ObjectId(req.params.id) })
+        }
         res.json(stay)
     } catch (err) {
         res.status(500).json({ error: 'Failed to get stay' })
