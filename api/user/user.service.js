@@ -12,7 +12,7 @@ export const userService = {
 
 async function query() {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         let users = await collection.find().toArray()
         users = users.map(user => {
             delete user.password
@@ -27,7 +27,7 @@ async function query() {
 
 async function getById(userId) {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         const user = await collection.findOne({ _id: new ObjectId(userId) })
         delete user.password
         return user
@@ -39,7 +39,7 @@ async function getById(userId) {
 
 async function getByUsername(username) {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         const user = await collection.findOne({ username })
         return user
     } catch (err) {
@@ -50,7 +50,7 @@ async function getByUsername(username) {
 
 async function remove(userId) {
     try {
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         await collection.deleteOne({ _id: new ObjectId(userId) })
     } catch (err) {
         console.error(`cannot remove user ${userId}`, err)
@@ -64,7 +64,7 @@ async function update(user) {
             _id: new ObjectId(user._id),
             fullname: user.fullname,
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
         return userToSave
     } catch (err) {
@@ -82,7 +82,7 @@ async function add(user) {
             imgUrl: user.imgUrl,
             isAdmin: user.isAdmin || false,
         }
-        const collection = await dbService.getCollection('user')
+        const collection = await dbService.getCollection('users')
         await collection.insertOne(userToAdd)
         return userToAdd
     } catch (err) {
