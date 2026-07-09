@@ -1,9 +1,7 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import stayRoutes from './api/stay.routes.js'
-
-dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3030
