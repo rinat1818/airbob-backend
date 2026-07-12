@@ -2,7 +2,7 @@ import { MongoClient } from 'mongodb'
 import { config } from '../config/index.js'
 
 var dbConn = null
-
+// const client = await MongoClient.connect(config.dbURL, { family: 4 })
 export const dbService = { getCollection }
 
 async function getCollection(collectionName) {
