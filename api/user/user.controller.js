@@ -37,6 +37,6 @@ export async function updateUser(req, res) {
         res.send(savedUser)
     } catch (err) {
         console.error('Failed to update user', err)
-        res.status(400).send({ err: 'Failed to update user' })
+        res.status(400).send({ err: 'Failed to update user', details: err.message || String(err) })
     }
 }

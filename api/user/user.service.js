@@ -10,6 +10,20 @@ export const userService = {
     getByUsername,
 }
 
+// Some users were seeded with a plain string _id (e.g. "u101") instead of
+// a real MongoDB ObjectId, same situation as the stays collection. This
+// finds a user by either format so update/get/remove work regardless of
+// which kind of _id a given account has.
+async function findUserQuery(collection, id) {
+    let user = await collection.findOne({ _id: id })
+    if (user) return { _id: id }
+    if (ObjectId.isValid(id)) {
+        user = await collection.findOne({ _id: new ObjectId(id) })
+        if (user) return { _id: new ObjectId(id) }
+    }
+    return null
+}
+
 async function query() {
     try {
         const collection = await dbService.getCollection('users')
@@ -28,7 +42,10 @@ async function query() {
 async function getById(userId) {
     try {
         const collection = await dbService.getCollection('users')
-        const user = await collection.findOne({ _id: new ObjectId(userId) })
+        const idQuery = await findUserQuery(collection, userId)
+        if (!idQuery) return null
+
+        const user = await collection.findOne(idQuery)
         delete user.password
         return user
     } catch (err) {
@@ -51,7 +68,10 @@ async function getByUsername(username) {
 async function remove(userId) {
     try {
         const collection = await dbService.getCollection('users')
-        await collection.deleteOne({ _id: new ObjectId(userId) })
+        const idQuery = await findUserQuery(collection, userId)
+        if (!idQuery) return
+
+        await collection.deleteOne(idQuery)
     } catch (err) {
         console.error(`cannot remove user ${userId}`, err)
         throw err
@@ -60,8 +80,9 @@ async function remove(userId) {
 
 async function update(user) {
     try {
-        const userId = new ObjectId(user._id)
         const collection = await dbService.getCollection('users')
+        const idQuery = await findUserQuery(collection, user._id)
+        if (!idQuery) throw new Error(`No user found with _id ${user._id}`)
 
         // Only touch fields that were actually sent, so a partial update
         // (e.g. just isHost + stays from "Become a Host") can't wipe out
@@ -72,12 +93,12 @@ async function update(user) {
         if (user.isHost !== undefined) fieldsToUpdate.isHost = user.isHost
         if (user.stays !== undefined) fieldsToUpdate.stays = user.stays
 
-        await collection.updateOne({ _id: userId }, { $set: fieldsToUpdate })
+        await collection.updateOne(idQuery, { $set: fieldsToUpdate })
 
         // Return the full saved user (not just the fields we touched) so
         // the frontend doesn't clobber its in-memory user with a partial
         // object.
-        const savedUser = await collection.findOne({ _id: userId })
+        const savedUser = await collection.findOne(idQuery)
         delete savedUser.password
         return savedUser
     } catch (err) {
