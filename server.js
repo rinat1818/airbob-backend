@@ -2,6 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import stayRoutes from './api/stay.routes.js'
+import userRoutes from './api/user.routes.js'
+import authRoutes from './api/auth.routes.js'
 
 const app = express()
 const PORT = process.env.PORT || 3030
@@ -26,6 +28,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.use('/api/stay', stayRoutes)
+app.use('/api/user', userRoutes)
+app.use('/api/auth', authRoutes)
 
 app.get('/', (req, res) => {
     res.send('Airbob server is running!')
