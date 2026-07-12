@@ -60,13 +60,26 @@ async function remove(userId) {
 
 async function update(user) {
     try {
-        const userToSave = {
-            _id: new ObjectId(user._id),
-            fullname: user.fullname,
-        }
+        const userId = new ObjectId(user._id)
         const collection = await dbService.getCollection('users')
-        await collection.updateOne({ _id: userToSave._id }, { $set: userToSave })
-        return userToSave
+
+        // Only touch fields that were actually sent, so a partial update
+        // (e.g. just isHost + stays from "Become a Host") can't wipe out
+        // other fields by setting them to undefined.
+        const fieldsToUpdate = {}
+        if (user.fullname !== undefined) fieldsToUpdate.fullname = user.fullname
+        if (user.imgUrl !== undefined) fieldsToUpdate.imgUrl = user.imgUrl
+        if (user.isHost !== undefined) fieldsToUpdate.isHost = user.isHost
+        if (user.stays !== undefined) fieldsToUpdate.stays = user.stays
+
+        await collection.updateOne({ _id: userId }, { $set: fieldsToUpdate })
+
+        // Return the full saved user (not just the fields we touched) so
+        // the frontend doesn't clobber its in-memory user with a partial
+        // object.
+        const savedUser = await collection.findOne({ _id: userId })
+        delete savedUser.password
+        return savedUser
     } catch (err) {
         console.error(`cannot update user ${user._id}`, err)
         throw err
