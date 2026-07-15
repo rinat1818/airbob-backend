@@ -5,6 +5,7 @@ import stayRoutes from './api/stay.routes.js'
 import path from 'path'
 import { authRoutes } from './api/auth/auth.routes.js'
 import { userRoutes } from './api/user/user.routes.js'
+import bookingRoutes from './api//booking/booking.routes.js'
 
 dotenv.config()
 
@@ -33,6 +34,7 @@ if (process.env.NODE_ENV === 'production') {
 app.use('/api/stay', stayRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/user', userRoutes)
+app.use('/api/booking', bookingRoutes)
 
 app.get('/', (req, res) => {
     res.send('Airbob server is running!')
